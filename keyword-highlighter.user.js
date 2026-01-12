@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.3.0
+// @version      0.3.2
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -105,10 +105,15 @@ Usage:
   function buildTokenMap(config) {
     const highlight = new Map();
     const exclude = new Set();
-    config.highlight.forEach((word) =>
-      highlight.set(normalizeToken(word), word)
-    );
-    config.exclude.forEach((word) => exclude.add(normalizeToken(word)));
+    config.exclude.forEach((word) => {
+      const normalized = normalizeToken(word);
+      if (normalized) exclude.add(normalized);
+    });
+    config.highlight.forEach((word) => {
+      const normalized = normalizeToken(word);
+      if (!normalized || exclude.has(normalized)) return;
+      highlight.set(normalized, word);
+    });
     return { highlight, exclude };
   }
 
@@ -274,12 +279,13 @@ Usage:
             span.style.borderRadius = "10px";
             span.style.padding = "1px 5px";
             span.style.boxShadow =
-              "0 0 0 4px #ffffff, 0 0 0 6px #111111, 4px 4px 0 rgba(0, 0, 0, 0.35)";
+              "0 0 0 4px #ffffff, 4px 4px 0 rgba(0, 0, 0, 0.25)";
             span.style.border = "none";
             span.style.fontWeight = "700";
             span.style.textShadow = "0 1px 0 rgba(0, 0, 0, 0.35)";
             span.style.backgroundImage =
               "linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.1))";
+            span.style.transform = "rotate(-2deg)";
           }
         }
 
@@ -304,7 +310,7 @@ Usage:
       const config = loadConfig();
       const tokenMap = buildTokenMap(config);
       const excludeRegex = buildRegexFromList(config.exclude);
-      const highlightRegex = buildRegexFromList(config.highlight);
+      const highlightRegex = buildRegexFromList(Array.from(tokenMap.highlight.keys()));
 
       clearHighlights();
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2
+- Remove black sticker border and add a slight tilt.
+
+## 0.3.1
+- Resolve overlap between highlight and exclude by prioritizing exact excludes.
+
 ## 0.3.0
 - Keep the popup anchored above the HL button after dragging.
 

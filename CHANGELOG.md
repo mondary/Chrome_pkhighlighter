@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.7
+- Avoid innerHTML in Gmail by building the icon node safely.
+
 ## 0.2.6
 - Use a Font Awesome icon for the HL bubble.
 

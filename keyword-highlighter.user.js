@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.2.6
+// @version      0.2.7
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -660,7 +660,9 @@ Usage:
     toggle.type = "button";
     toggle.setAttribute("aria-label", "Keyword Highlighter");
     toggle.title = "Keyword Highlighter";
-    toggle.innerHTML = '<i class="fa-solid fa-highlighter"></i>';
+    const icon = document.createElement("i");
+    icon.className = "fa-solid fa-highlighter";
+    toggle.appendChild(icon);
 
     const overlay = document.createElement("div");
     overlay.id = overlayId;

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+- Keep the popup anchored above the HL button after dragging.
+
+## 0.2.9
+- Make highlighted text bold by default for better readability.
+
 ## 0.2.8
 - Switch drag handling to mouse events for better Gmail compatibility.
 

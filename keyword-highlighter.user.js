@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.2.8
+// @version      0.3.0
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -245,6 +245,7 @@ Usage:
           span.style.padding = "0 3px";
           span.style.display = "inline-block";
           span.style.transform = `rotate(${tilt})`;
+          span.style.fontWeight = "700";
 
           if (styleMode === "normal") {
             span.style.borderRadius = "4px";
@@ -259,7 +260,7 @@ Usage:
             span.classList.add("pkh-sticker-v1");
             span.style.padding = "0.15rem 0.45rem";
             span.style.borderRadius = "9999px";
-            span.style.fontWeight = "600";
+            span.style.fontWeight = "700";
             span.style.textShadow = "none";
           } else if (styleMode === "candy") {
             span.classList.add("pkh-candy");
@@ -746,6 +747,23 @@ Usage:
       el.style.bottom = "auto";
     }
 
+    function positionOverlayNearToggle() {
+      const toggleRect = toggle.getBoundingClientRect();
+      overlay.style.display = "block";
+      const overlayRect = overlay.getBoundingClientRect();
+      const gap = 8;
+      const margin = 8;
+      const left = Math.min(
+        window.innerWidth - overlayRect.width - margin,
+        Math.max(margin, toggleRect.left)
+      );
+      const top = Math.max(
+        margin,
+        toggleRect.top - overlayRect.height - gap
+      );
+      setPosition(overlay, left, top);
+    }
+
     function startDrag(event) {
       if (event.type === "mousedown" && event.button !== 0) return;
       if (
@@ -822,7 +840,10 @@ Usage:
         lastDragMoved = false;
         return;
       }
-      overlay.classList.toggle("pkh-open");
+      const isOpen = overlay.classList.toggle("pkh-open");
+      if (isOpen) {
+        positionOverlayNearToggle();
+      }
     });
 
     toggle.addEventListener("mousedown", startDrag);

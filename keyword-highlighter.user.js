@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.3.2
+// @version      0.3.4
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -275,6 +275,26 @@ Usage:
             span.style.padding = "0";
             span.style.fontWeight = "400";
             span.style.textShadow = "none";
+          } else if (styleMode === "pastel") {
+            span.style.borderRadius = "8px";
+            span.style.padding = "0.12rem 0.5rem";
+            span.style.fontWeight = "700";
+            span.style.textShadow = "none";
+            span.style.boxShadow = "0 2px 0 rgba(0, 0, 0, 0.12)";
+            span.style.backgroundImage =
+              "linear-gradient(120deg, rgba(255, 224, 178, 0.9), rgba(255, 204, 230, 0.9))";
+            span.style.border = "1px solid rgba(0, 0, 0, 0.08)";
+          } else if (styleMode === "neon") {
+            span.style.borderRadius = "10px";
+            span.style.padding = "0.12rem 0.55rem";
+            span.style.fontWeight = "800";
+            span.style.color = "#24001b";
+            span.style.textShadow =
+              "0 1px 0 rgba(255, 255, 255, 0.3), 0 0 8px rgba(255, 45, 154, 0.65)";
+            span.style.boxShadow =
+              "0 0 0 2px rgba(255, 45, 154, 0.7), 0 0 12px rgba(0, 245, 255, 0.55)";
+            span.style.background =
+              "linear-gradient(90deg, rgba(255, 45, 154, 0.85), rgba(0, 245, 255, 0.85))";
           } else {
             span.style.borderRadius = "10px";
             span.style.padding = "1px 5px";
@@ -713,11 +733,24 @@ Usage:
     const styleSticker = document.createElement("option");
     styleSticker.value = "sticker";
     styleSticker.textContent = "Sticker";
+    const stylePastel = document.createElement("option");
+    stylePastel.value = "pastel";
+    stylePastel.textContent = "Pastel";
+    const styleNeon = document.createElement("option");
+    styleNeon.value = "neon";
+    styleNeon.textContent = "Synthwave";
     styleSelect.appendChild(styleNormal);
     styleSelect.appendChild(styleBold);
     styleSelect.appendChild(styleOrigami);
     styleSelect.appendChild(styleCandy);
     styleSelect.appendChild(styleSticker);
+    styleSelect.appendChild(stylePastel);
+    styleSelect.appendChild(styleNeon);
+
+    stylePastel.style.color = "#7a4b4b";
+    stylePastel.style.fontWeight = "700";
+    styleNeon.style.color = "#ff2d9a";
+    styleNeon.style.fontWeight = "700";
 
     const actions = document.createElement("div");
     actions.className = "pkh-actions";

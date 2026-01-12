@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.4
+- Replace Neon with a Synthwave-style highlight.
+
+## 0.3.3
+- Add Pastel and Neon highlight styles and style the menu labels.
+
 ## 0.3.2
 - Remove black sticker border and add a slight tilt.
 

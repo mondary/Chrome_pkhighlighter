@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.8
+- Switch drag handling to mouse events for better Gmail compatibility.
+
 ## 0.2.7
 - Avoid innerHTML in Gmail by building the icon node safely.
 

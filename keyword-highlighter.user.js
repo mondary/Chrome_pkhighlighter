@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.2.7
+// @version      0.2.8
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -747,7 +747,7 @@ Usage:
     }
 
     function startDrag(event) {
-      if (event.button !== 0) return;
+      if (event.type === "mousedown" && event.button !== 0) return;
       if (
         event.target !== toggle &&
         event.target &&
@@ -783,8 +783,8 @@ Usage:
       };
       lastDragMoved = false;
 
-      document.addEventListener("pointermove", onDrag);
-      document.addEventListener("pointerup", endDrag, { once: true });
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", endDrag, { once: true });
     }
 
     function onDrag(event) {
@@ -812,7 +812,7 @@ Usage:
     }
 
     function endDrag() {
-      document.removeEventListener("pointermove", onDrag);
+      document.removeEventListener("mousemove", onDrag);
       lastDragMoved = Boolean(dragState && dragState.moved);
       dragState = null;
     }
@@ -825,8 +825,8 @@ Usage:
       overlay.classList.toggle("pkh-open");
     });
 
-    toggle.addEventListener("pointerdown", startDrag);
-    overlay.addEventListener("pointerdown", startDrag);
+    toggle.addEventListener("mousedown", startDrag);
+    overlay.addEventListener("mousedown", startDrag);
 
     const host = document.body || document.documentElement;
     host.appendChild(toggle);

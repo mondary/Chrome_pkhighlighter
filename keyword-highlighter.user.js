@@ -231,7 +231,8 @@ Usage:
 
         if (mode === "exclude") {
           span.dataset.pkhExclude = "1";
-          span.style.textDecoration = "line-through";
+          span.style.textDecorationLine = "line-through";
+          span.style.textDecorationStyle = "wavy";
           span.style.textDecorationThickness = "2px";
           span.style.textDecorationColor = "#b44";
           span.style.background = "transparent";

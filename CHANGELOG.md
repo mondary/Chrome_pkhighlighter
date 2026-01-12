@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.5
+- Make the HL bubble draggable with the overlay.
+
 ## 0.2.4
 - Ensure excluded phrases block nested highlight matches.
 - Match multi-word phrases across more whitespace variants.

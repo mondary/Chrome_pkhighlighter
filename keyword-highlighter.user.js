@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.2.4
+// @version      0.2.5
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -27,6 +27,7 @@ Usage:
 
   let applyTimer = null;
   let isApplying = false;
+  let dragState = null;
 
   function storageKey() {
     return STORAGE_PREFIX + window.location.hostname;
@@ -725,9 +726,95 @@ Usage:
     overlay.appendChild(styleSelect);
     overlay.appendChild(actions);
 
+    let lastDragMoved = false;
+
+    function setPosition(el, left, top) {
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+      el.style.right = "auto";
+      el.style.bottom = "auto";
+    }
+
+    function startDrag(event) {
+      if (event.button !== 0) return;
+      if (
+        event.target &&
+        event.target.closest &&
+        event.target.closest("input, select, button, textarea")
+      ) {
+        return;
+      }
+
+      const toggleRect = toggle.getBoundingClientRect();
+      const overlayRect = overlay.getBoundingClientRect();
+      const hasOverlaySize = overlayRect.width > 0 && overlayRect.height > 0;
+      const offsetX = hasOverlaySize ? overlayRect.left - toggleRect.left : 0;
+      const offsetY = hasOverlaySize ? overlayRect.top - toggleRect.top : -48;
+
+      setPosition(toggle, toggleRect.left, toggleRect.top);
+      if (hasOverlaySize) {
+        setPosition(overlay, overlayRect.left, overlayRect.top);
+      } else {
+        setPosition(overlay, toggleRect.left + offsetX, toggleRect.top + offsetY);
+      }
+
+      dragState = {
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeft: toggleRect.left,
+        startTop: toggleRect.top,
+        offsetX,
+        offsetY,
+        toggleWidth: toggleRect.width,
+        toggleHeight: toggleRect.height,
+        moved: false,
+      };
+      lastDragMoved = false;
+
+      document.addEventListener("pointermove", onDrag);
+      document.addEventListener("pointerup", endDrag, { once: true });
+    }
+
+    function onDrag(event) {
+      if (!dragState) return;
+      const deltaX = event.clientX - dragState.startX;
+      const deltaY = event.clientY - dragState.startY;
+      if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+        dragState.moved = true;
+      }
+
+      const margin = 8;
+      const maxLeft = window.innerWidth - dragState.toggleWidth - margin;
+      const maxTop = window.innerHeight - dragState.toggleHeight - margin;
+      const nextLeft = Math.min(
+        maxLeft,
+        Math.max(margin, dragState.startLeft + deltaX)
+      );
+      const nextTop = Math.min(
+        maxTop,
+        Math.max(margin, dragState.startTop + deltaY)
+      );
+
+      setPosition(toggle, nextLeft, nextTop);
+      setPosition(overlay, nextLeft + dragState.offsetX, nextTop + dragState.offsetY);
+    }
+
+    function endDrag() {
+      document.removeEventListener("pointermove", onDrag);
+      lastDragMoved = Boolean(dragState && dragState.moved);
+      dragState = null;
+    }
+
     toggle.addEventListener("click", () => {
+      if (lastDragMoved) {
+        lastDragMoved = false;
+        return;
+      }
       overlay.classList.toggle("pkh-open");
     });
+
+    toggle.addEventListener("pointerdown", startDrag);
+    overlay.addEventListener("pointerdown", startDrag);
 
     const host = document.body || document.documentElement;
     host.appendChild(toggle);

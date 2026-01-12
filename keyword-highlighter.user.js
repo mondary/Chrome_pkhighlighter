@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.2.5
+// @version      0.2.6
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -338,6 +338,7 @@ Usage:
     const style = document.createElement("style");
     style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+      @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
       #${toggleId} {
         position: fixed;
@@ -353,7 +354,12 @@ Usage:
         font: 600 12px/36px ui-sans-serif, system-ui, -apple-system, sans-serif;
         text-align: center;
         cursor: pointer;
+        touch-action: none;
+        user-select: none;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       #${overlayId} {
@@ -369,6 +375,7 @@ Usage:
         padding: 12px;
         font: 12px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif;
         display: none;
+        touch-action: none;
       }
 
       #${overlayId}.pkh-open {
@@ -651,7 +658,9 @@ Usage:
     const toggle = document.createElement("button");
     toggle.id = toggleId;
     toggle.type = "button";
-    toggle.textContent = "HL";
+    toggle.setAttribute("aria-label", "Keyword Highlighter");
+    toggle.title = "Keyword Highlighter";
+    toggle.innerHTML = '<i class="fa-solid fa-highlighter"></i>';
 
     const overlay = document.createElement("div");
     overlay.id = overlayId;
@@ -738,6 +747,7 @@ Usage:
     function startDrag(event) {
       if (event.button !== 0) return;
       if (
+        event.target !== toggle &&
         event.target &&
         event.target.closest &&
         event.target.closest("input, select, button, textarea")

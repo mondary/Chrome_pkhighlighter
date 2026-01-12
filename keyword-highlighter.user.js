@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.3.4
+// @version      0.3.6
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -436,6 +436,103 @@ Usage:
         background: #fff;
       }
 
+      #${overlayId} .pkh-style-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      #${overlayId} .pkh-style-item {
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        padding: 6px;
+        background: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        min-height: 34px;
+        transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+      }
+
+      #${overlayId} .pkh-style-item.is-active {
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+      }
+
+      #${overlayId} .pkh-style-preview {
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        display: inline-block;
+      }
+
+      #${overlayId} .pkh-preview-normal {
+        background: #ffe16a;
+        color: #1a1a1a;
+        border-radius: 4px;
+        padding: 0 2px;
+      }
+
+      #${overlayId} .pkh-preview-bold {
+        background: #ffd35c;
+        color: #1a1a1a;
+        border-radius: 4px;
+        padding: 0 2px;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
+      }
+
+      #${overlayId} .pkh-preview-origami {
+        border-radius: 9999px;
+        padding: 0.1rem 0.45rem;
+        background: #ffd35c;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+
+      #${overlayId} .pkh-preview-origami::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        top: -2px;
+        right: -2px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid #fff;
+      }
+
+      #${overlayId} .pkh-preview-candy {
+        font-family: "Fredoka One", cursive;
+        color: #111;
+        text-shadow: 0 0 0 #fff;
+      }
+
+      #${overlayId} .pkh-preview-sticker {
+        border-radius: 10px;
+        padding: 0 4px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.1));
+        box-shadow: 0 0 0 4px #ffffff, 4px 4px 0 rgba(0, 0, 0, 0.25);
+        transform: rotate(-2deg);
+      }
+
+      #${overlayId} .pkh-preview-pastel {
+        border-radius: 8px;
+        padding: 0.1rem 0.45rem;
+        background: linear-gradient(120deg, rgba(255, 224, 178, 0.9), rgba(255, 204, 230, 0.9));
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      #${overlayId} .pkh-preview-neon {
+        border-radius: 10px;
+        padding: 0.1rem 0.5rem;
+        color: #24001b;
+        background: linear-gradient(90deg, rgba(255, 45, 154, 0.85), rgba(0, 245, 255, 0.85));
+        box-shadow: 0 0 0 2px rgba(255, 45, 154, 0.7), 0 0 12px rgba(0, 245, 255, 0.55);
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+
       #${overlayId} .pkh-actions {
         display: flex;
         gap: 6px;
@@ -713,44 +810,50 @@ Usage:
     excludeInput.placeholder = "marketing";
 
     const styleLabel = document.createElement("label");
-    styleLabel.setAttribute("for", "pkh-style");
     styleLabel.textContent = "Style";
 
-    const styleSelect = document.createElement("select");
-    styleSelect.id = "pkh-style";
-    const styleNormal = document.createElement("option");
-    styleNormal.value = "normal";
-    styleNormal.textContent = "Normal";
-    const styleBold = document.createElement("option");
-    styleBold.value = "bold";
-    styleBold.textContent = "Bold";
-    const styleOrigami = document.createElement("option");
-    styleOrigami.value = "origami";
-    styleOrigami.textContent = "Origami";
-    const styleCandy = document.createElement("option");
-    styleCandy.value = "candy";
-    styleCandy.textContent = "Candy";
-    const styleSticker = document.createElement("option");
-    styleSticker.value = "sticker";
-    styleSticker.textContent = "Sticker";
-    const stylePastel = document.createElement("option");
-    stylePastel.value = "pastel";
-    stylePastel.textContent = "Pastel";
-    const styleNeon = document.createElement("option");
-    styleNeon.value = "neon";
-    styleNeon.textContent = "Synthwave";
-    styleSelect.appendChild(styleNormal);
-    styleSelect.appendChild(styleBold);
-    styleSelect.appendChild(styleOrigami);
-    styleSelect.appendChild(styleCandy);
-    styleSelect.appendChild(styleSticker);
-    styleSelect.appendChild(stylePastel);
-    styleSelect.appendChild(styleNeon);
+    const styleGrid = document.createElement("div");
+    styleGrid.className = "pkh-style-grid";
 
-    stylePastel.style.color = "#7a4b4b";
-    stylePastel.style.fontWeight = "700";
-    styleNeon.style.color = "#ff2d9a";
-    styleNeon.style.fontWeight = "700";
+    const styles = [
+      { id: "sticker", label: "Sticker", previewClass: "pkh-preview-sticker" },
+      { id: "candy", label: "Candy", previewClass: "pkh-preview-candy" },
+      { id: "normal", label: "Normal", previewClass: "pkh-preview-normal" },
+      { id: "bold", label: "Bold", previewClass: "pkh-preview-bold" },
+      { id: "origami", label: "Origami", previewClass: "pkh-preview-origami" },
+      { id: "pastel", label: "Pastel", previewClass: "pkh-preview-pastel" },
+      { id: "neon", label: "Synthwave", previewClass: "pkh-preview-neon" },
+    ];
+
+    let currentStyle = "sticker";
+
+    function renderStyleGrid() {
+      while (styleGrid.firstChild) {
+        styleGrid.removeChild(styleGrid.firstChild);
+      }
+      styles.forEach((style) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "pkh-style-item";
+        button.dataset.style = style.id;
+
+        if (style.id === currentStyle) {
+          button.classList.add("is-active");
+        }
+
+        const preview = document.createElement("span");
+        preview.className = `pkh-style-preview ${style.previewClass}`;
+        preview.textContent = style.label;
+        button.appendChild(preview);
+
+        button.addEventListener("click", () => {
+          currentStyle = style.id;
+          renderStyleGrid();
+        });
+
+        styleGrid.appendChild(button);
+      });
+    }
 
     const actions = document.createElement("div");
     actions.className = "pkh-actions";
@@ -774,7 +877,7 @@ Usage:
     overlay.appendChild(excludeLabel);
     overlay.appendChild(excludeInput);
     overlay.appendChild(styleLabel);
-    overlay.appendChild(styleSelect);
+    overlay.appendChild(styleGrid);
     overlay.appendChild(actions);
 
     let lastDragMoved = false;
@@ -896,13 +999,14 @@ Usage:
     const config = loadConfig();
     highlightInput.value = config.highlight.join(", ");
     excludeInput.value = config.exclude.join(", ");
-    styleSelect.value = config.style || "sticker";
+    currentStyle = config.style || "sticker";
+    renderStyleGrid();
 
     saveButton.addEventListener("click", () => {
       const nextConfig = {
         highlight: normalizeList(highlightInput.value),
         exclude: normalizeList(excludeInput.value),
-        style: styleSelect.value,
+        style: currentStyle,
       };
       saveConfig(nextConfig);
       scheduleApply();
@@ -912,7 +1016,7 @@ Usage:
       const nextConfig = {
         highlight: [],
         exclude: [],
-        style: styleSelect.value || "sticker",
+        style: currentStyle || "sticker",
       };
       highlightInput.value = "";
       excludeInput.value = "";

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.6
+- Fix Trusted Types error in Gmail by avoiding innerHTML.
+
+## 0.3.5
+- Replace the style dropdown with a visual preview picker.
+
 ## 0.3.4
 - Replace Neon with a Synthwave-style highlight.
 

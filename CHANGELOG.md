@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.7
+- Add Offset style (renamed from Normal) with a shifted highlight.
+- Fix Offset text color for readability.
+
 ## 0.3.6
 - Fix Trusted Types error in Gmail by avoiding innerHTML.
 

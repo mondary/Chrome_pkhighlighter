@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.3.6
+// @version      0.3.7
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
 // @match        https://mail.google.com/*
 // @run-at       document-start
@@ -41,7 +41,11 @@ Usage:
     try {
       const parsed = JSON.parse(raw);
       const style =
-        parsed.style === "sticker-v1" ? "origami" : parsed.style;
+        parsed.style === "sticker-v1"
+          ? "origami"
+          : parsed.style === "normal"
+            ? "offset"
+            : parsed.style;
       return {
         highlight: Array.isArray(parsed.highlight) ? parsed.highlight : [],
         exclude: Array.isArray(parsed.exclude) ? parsed.exclude : [],
@@ -252,10 +256,13 @@ Usage:
           span.style.transform = `rotate(${tilt})`;
           span.style.fontWeight = "700";
 
-          if (styleMode === "normal") {
+          if (styleMode === "normal" || styleMode === "offset") {
             span.style.borderRadius = "4px";
             span.style.padding = "0 2px";
             span.style.textShadow = "none";
+            span.style.background = "transparent";
+            span.style.color = "#1a1a1a";
+            span.style.boxShadow = `3px 3px 0 0 ${bg}`;
           } else if (styleMode === "bold") {
             span.style.borderRadius = "4px";
             span.style.boxShadow = "0 0 0 2px rgba(0, 0, 0, 0.25)";
@@ -474,6 +481,13 @@ Usage:
         padding: 0 2px;
       }
 
+      #${overlayId} .pkh-preview-offset {
+        color: #1a1a1a;
+        border-radius: 4px;
+        padding: 0 2px;
+        box-shadow: 3px 3px 0 0 #ffe16a;
+      }
+
       #${overlayId} .pkh-preview-bold {
         background: #ffd35c;
         color: #1a1a1a;
@@ -511,7 +525,7 @@ Usage:
       #${overlayId} .pkh-preview-sticker {
         border-radius: 10px;
         padding: 0 4px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.1));
+        background: linear-gradient(135deg, rgba(65, 136, 241, 0.95), rgba(22, 84, 170, 0.9));
         box-shadow: 0 0 0 4px #ffffff, 4px 4px 0 rgba(0, 0, 0, 0.25);
         transform: rotate(-2deg);
       }
@@ -818,7 +832,7 @@ Usage:
     const styles = [
       { id: "sticker", label: "Sticker", previewClass: "pkh-preview-sticker" },
       { id: "candy", label: "Candy", previewClass: "pkh-preview-candy" },
-      { id: "normal", label: "Normal", previewClass: "pkh-preview-normal" },
+      { id: "offset", label: "Offset", previewClass: "pkh-preview-offset" },
       { id: "bold", label: "Bold", previewClass: "pkh-preview-bold" },
       { id: "origami", label: "Origami", previewClass: "pkh-preview-origami" },
       { id: "pastel", label: "Pastel", previewClass: "pkh-preview-pastel" },

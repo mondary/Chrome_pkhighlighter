@@ -33,3 +33,4 @@ coverage/
 # OS
 *.swp
 *.swo
+-pk/

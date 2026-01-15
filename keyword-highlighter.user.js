@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         PK Keyword Highlighter
 // @namespace    https://github.com/mondary
-// @version      0.3.7
+// @version      0.4.0
 // @description  Highlight keywords with colors and strike-through excluded terms, per site.
-// @match        https://mail.google.com/*
+// @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
@@ -58,6 +58,45 @@ Usage:
 
   function saveConfig(config) {
     window.localStorage.setItem(storageKey(), JSON.stringify(config));
+  }
+
+  const DOMAINS_KEY = "pkh:enabled-domains";
+
+  function loadEnabledDomains() {
+    const raw = window.localStorage.getItem(DOMAINS_KEY);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveEnabledDomains(domains) {
+    window.localStorage.setItem(DOMAINS_KEY, JSON.stringify(domains));
+  }
+
+  function isDomainEnabled() {
+    const domains = loadEnabledDomains();
+    return domains.includes(window.location.hostname);
+  }
+
+  function addCurrentDomain() {
+    const domains = loadEnabledDomains();
+    const hostname = window.location.hostname;
+    if (!domains.includes(hostname)) {
+      domains.push(hostname);
+      saveEnabledDomains(domains);
+    }
+    return domains;
+  }
+
+  function removeDomain(domain) {
+    const domains = loadEnabledDomains();
+    const filtered = domains.filter((d) => d !== domain);
+    saveEnabledDomains(filtered);
+    return filtered;
   }
 
   function normalizeList(value) {
@@ -332,6 +371,10 @@ Usage:
 
   function applyHighlights() {
     if (isApplying) return;
+    if (!isDomainEnabled()) {
+      clearHighlights();
+      return;
+    }
     isApplying = true;
 
     try {
@@ -431,6 +474,100 @@ Usage:
         padding: 6px 8px;
         margin-bottom: 8px;
         font-size: 12px;
+      }
+
+      #${overlayId} textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 6px 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 48px;
+      }
+
+      #${overlayId} .pkh-domain-section {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+      }
+
+      #${overlayId} .pkh-domain-list {
+        max-height: 100px;
+        overflow-y: auto;
+        margin-bottom: 8px;
+        border: 1px solid #eee;
+        border-radius: 6px;
+      }
+
+      #${overlayId} .pkh-domain-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 8px;
+        font-size: 11px;
+        border-bottom: 1px solid #f5f5f5;
+      }
+
+      #${overlayId} .pkh-domain-item:last-child {
+        border-bottom: none;
+      }
+
+      #${overlayId} .pkh-domain-item.is-current {
+        background: #f0f7ff;
+      }
+
+      #${overlayId} .pkh-domain-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #${overlayId} .pkh-domain-current {
+        font-size: 9px;
+        color: #666;
+        margin-left: 4px;
+      }
+
+      #${overlayId} .pkh-domain-remove {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        padding: 2px 6px;
+        font-size: 14px;
+        line-height: 1;
+        flex: none;
+      }
+
+      #${overlayId} .pkh-domain-remove:hover {
+        color: #c00;
+      }
+
+      #${overlayId} .pkh-add-domain {
+        width: 100%;
+        background: #f5f5f5;
+        border: 1px dashed #ccc;
+        border-radius: 6px;
+        padding: 8px;
+        cursor: pointer;
+        font-size: 11px;
+        color: #666;
+      }
+
+      #${overlayId} .pkh-add-domain:hover {
+        background: #eee;
+        border-color: #999;
+      }
+
+      #${overlayId} .pkh-empty-domains {
+        padding: 12px;
+        text-align: center;
+        color: #999;
+        font-size: 11px;
       }
 
       #${overlayId} select {
@@ -806,23 +943,113 @@ Usage:
     const overlay = document.createElement("div");
     overlay.id = overlayId;
 
+    // Domain section
+    const domainSection = document.createElement("div");
+    domainSection.className = "pkh-domain-section";
+
+    const domainLabel = document.createElement("label");
+    domainLabel.textContent = "Sites actifs";
+
+    const domainList = document.createElement("div");
+    domainList.className = "pkh-domain-list";
+    domainList.id = "pkh-domain-list";
+
+    const addDomainBtn = document.createElement("button");
+    addDomainBtn.type = "button";
+    addDomainBtn.className = "pkh-add-domain";
+    addDomainBtn.id = "pkh-add-domain";
+
+    function renderDomainList() {
+      const domains = loadEnabledDomains();
+      const currentHost = window.location.hostname;
+      const isCurrentEnabled = domains.includes(currentHost);
+
+      while (domainList.firstChild) {
+        domainList.removeChild(domainList.firstChild);
+      }
+
+      if (domains.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "pkh-empty-domains";
+        empty.textContent = "Aucun site actif";
+        domainList.appendChild(empty);
+      } else {
+        domains.forEach((domain) => {
+          const item = document.createElement("div");
+          item.className = "pkh-domain-item";
+          if (domain === currentHost) {
+            item.classList.add("is-current");
+          }
+
+          const name = document.createElement("span");
+          name.className = "pkh-domain-name";
+          name.textContent = domain;
+
+          if (domain === currentHost) {
+            const currentBadge = document.createElement("span");
+            currentBadge.className = "pkh-domain-current";
+            currentBadge.textContent = "(actuel)";
+            name.appendChild(currentBadge);
+          }
+
+          const removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className = "pkh-domain-remove";
+          removeBtn.textContent = "×";
+          removeBtn.addEventListener("click", () => {
+            removeDomain(domain);
+            renderDomainList();
+            scheduleApply();
+          });
+
+          item.appendChild(name);
+          item.appendChild(removeBtn);
+          domainList.appendChild(item);
+        });
+      }
+
+      if (isCurrentEnabled) {
+        addDomainBtn.textContent = "✓ Site actif";
+        addDomainBtn.disabled = true;
+        addDomainBtn.style.opacity = "0.5";
+        addDomainBtn.style.cursor = "default";
+      } else {
+        addDomainBtn.textContent = "+ Ajouter ce site";
+        addDomainBtn.disabled = false;
+        addDomainBtn.style.opacity = "1";
+        addDomainBtn.style.cursor = "pointer";
+      }
+    }
+
+    addDomainBtn.addEventListener("click", () => {
+      if (!addDomainBtn.disabled) {
+        addCurrentDomain();
+        renderDomainList();
+        scheduleApply();
+      }
+    });
+
+    domainSection.appendChild(domainLabel);
+    domainSection.appendChild(domainList);
+    domainSection.appendChild(addDomainBtn);
+
     const highlightLabel = document.createElement("label");
     highlightLabel.setAttribute("for", "pkh-highlight");
     highlightLabel.textContent = "Highlight";
 
-    const highlightInput = document.createElement("input");
+    const highlightInput = document.createElement("textarea");
     highlightInput.id = "pkh-highlight";
-    highlightInput.type = "text";
     highlightInput.placeholder = "X-Design, Job, YouTube";
+    highlightInput.rows = 2;
 
     const excludeLabel = document.createElement("label");
     excludeLabel.setAttribute("for", "pkh-exclude");
     excludeLabel.textContent = "Exclude";
 
-    const excludeInput = document.createElement("input");
+    const excludeInput = document.createElement("textarea");
     excludeInput.id = "pkh-exclude";
-    excludeInput.type = "text";
     excludeInput.placeholder = "marketing";
+    excludeInput.rows = 2;
 
     const styleLabel = document.createElement("label");
     styleLabel.textContent = "Style";
@@ -887,6 +1114,7 @@ Usage:
     actions.appendChild(saveButton);
     actions.appendChild(clearButton);
 
+    overlay.appendChild(domainSection);
     overlay.appendChild(highlightLabel);
     overlay.appendChild(highlightInput);
     overlay.appendChild(excludeLabel);
@@ -1009,8 +1237,8 @@ Usage:
     const host = document.body || document.documentElement;
     host.appendChild(toggle);
     host.appendChild(overlay);
-    overlay.classList.add("pkh-open");
 
+    renderDomainList();
     const config = loadConfig();
     highlightInput.value = config.highlight.join(", ");
     excludeInput.value = config.exclude.join(", ");

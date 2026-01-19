@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(code --list-extensions:*)",
+      "Bash(/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code:*)",
+      "Bash(mdfind:*)",
+      "Bash('/Applications/Vibe/vibe Antigravity.app/Contents/Resources/app/bin/antigravity' --list-extensions)",
+      "Bash(\"/Applications/Vibe/vibe Antigravity.app/Contents/Resources/app/bin/antigravity\" --uninstall-extension codfrm.scriptcat-vscode)",
+      "Bash(\"/Applications/Vibe/vibe Antigravity.app/Contents/Resources/app/bin/antigravity\" --install-extension codfrm.scriptcat-vscode)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npx vsce:*)",
+      "Bash(ls:*)",
+      "Bash(\"/Applications/Vibe/vibe Antigravity.app/Contents/Resources/app/bin/antigravity\" --install-extension /Users/clm/Documents/GitHub/EXTENSIONS/scriptcat-vscode-simple/scriptcat-sync-0.1.0.vsix)"
+    ]
+  }
+}

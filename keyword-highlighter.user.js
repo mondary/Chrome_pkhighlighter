@@ -494,6 +494,21 @@ Usage:
         padding-bottom: 12px;
         border-bottom: 1px solid #eee;
       }
+      #${overlayId} .pkh-close {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        border: none;
+        background: transparent;
+        color: #777;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 6px;
+      }
+      #${overlayId} .pkh-close:hover {
+        color: #111;
+      }
 
       #${overlayId} .pkh-domain-list {
         max-height: 100px;
@@ -1114,6 +1129,16 @@ Usage:
     actions.appendChild(saveButton);
     actions.appendChild(clearButton);
 
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "pkh-close";
+    closeButton.setAttribute("aria-label", "Fermer");
+    closeButton.textContent = "×";
+    closeButton.addEventListener("click", () => {
+      overlay.classList.remove("pkh-open");
+    });
+
+    overlay.appendChild(closeButton);
     overlay.appendChild(domainSection);
     overlay.appendChild(highlightLabel);
     overlay.appendChild(highlightInput);
@@ -1134,7 +1159,6 @@ Usage:
 
     function positionOverlayNearToggle() {
       const toggleRect = toggle.getBoundingClientRect();
-      overlay.style.display = "block";
       const overlayRect = overlay.getBoundingClientRect();
       const gap = 8;
       const margin = 8;
@@ -1233,6 +1257,23 @@ Usage:
 
     toggle.addEventListener("mousedown", startDrag);
     overlay.addEventListener("mousedown", startDrag);
+    document.addEventListener("mousedown", (event) => {
+      if (!overlay.classList.contains("pkh-open")) return;
+      if (
+        event.target === toggle ||
+        (event.target &&
+          event.target.closest &&
+          event.target.closest(`#${overlayId}, #${toggleId}`))
+      ) {
+        return;
+      }
+      overlay.classList.remove("pkh-open");
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        overlay.classList.remove("pkh-open");
+      }
+    });
 
     const host = document.body || document.documentElement;
     host.appendChild(toggle);
